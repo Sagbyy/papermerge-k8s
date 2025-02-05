@@ -36,3 +36,38 @@ spec:
           hostPath:
             path: /data/postgres-data
             type: DirectoryOrCreate
+
+---
+# Redis Cache
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: papermerge-redis
+  template:
+    metadata:
+      labels:
+        app: papermerge-redis
+    spec:
+      containers:
+        - name: papermerge-redis
+          image: redis:7-alpine
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          hostPath:
+            path: /data/redis-data
+            type: DirectoryOrCreate

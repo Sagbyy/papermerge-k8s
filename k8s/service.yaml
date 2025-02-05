@@ -11,3 +11,19 @@ spec:
     - port: 5432
       targetPort: 5432
   type: ClusterIP
+
+---
+
+# Redis Cache
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: papermerge-redis
+spec:
+  selector:
+    app: papermerge-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  type: ClusterIP
