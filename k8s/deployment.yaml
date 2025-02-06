@@ -71,3 +71,43 @@ spec:
           hostPath:
             path: /data/redis-data
             type: DirectoryOrCreate
+---
+
+#Minio deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: papermerge-minio
+  template:
+    metadata:
+      labels:
+        app: papermerge-minio
+    spec:
+      containers:
+        - name: papermerge-minio
+          image: minio/minio:latest
+          args:
+            - "server"
+            - "--console-address"
+            - ":9001"
+            - "/data"
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          envFrom:
+            - secretRef:
+                name: papermerge-minio-secret
+          volumeMounts:
+            - name: minio-storage
+              mountPath: /data
+      volumes:
+        - name: minio-storage
+          hostPath:
+            path: /data/minio
+            type: DirectoryOrCreate
