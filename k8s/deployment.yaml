@@ -34,7 +34,7 @@ spec:
       volumes:
         - name: postgres-data
           hostPath:
-            path: /data/postgres-data
+            path: /postgres-data
             type: DirectoryOrCreate
 
 ---
@@ -63,14 +63,6 @@ spec:
               cpu: "500m"
           ports:
             - containerPort: 6379
-          volumeMounts:
-            - name: redis-data
-              mountPath: /data
-      volumes:
-        - name: redis-data
-          hostPath:
-            path: /data/redis-data
-            type: DirectoryOrCreate
 
 ---
 
@@ -93,8 +85,7 @@ spec:
       containers:
         - name: papermerge-minio
           image: minio/minio:latest
-          command: [ "minio", "server" ]
-          args: [ "--console-address", ":9001", "/data" ]
+          args: [ "server", "--console-address", ":9001", "/data" ]
           resources:
             limits:
               memory: "512Mi"
@@ -111,7 +102,7 @@ spec:
       volumes:
         - name: minio-data
           hostPath:
-            path: /data/minio-data
+            path: /minio-data
             type: DirectoryOrCreate
 
 ---
@@ -175,10 +166,50 @@ spec:
         image: papermerge/ocrworker:0.3.1
         resources:
           limits:
-            memory: "128Mi"
+            memory: "512Mi"
             cpu: "500m"
         envFrom:
           - configMapRef:
               name: papermerge-worker-config
           - configMapRef:
               name: papermerge-worker-ocr-config
+
+---
+
+# Papermerge
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge
+spec:
+  selector:
+    matchLabels:
+      app: papermerge
+  template:
+    metadata:
+      labels:
+        app: papermerge
+    spec:
+      containers:
+      - name: papermerge
+        image: papermerge/papermerge:3.3.1
+        envFrom:
+          - configMapRef:
+              name: papermerge-config
+          - secretRef:
+              name: papermerge-secret
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: papermerge-data
+            mountPath: /var/media/pmg
+      volumes:
+        - name: papermerge-data
+          hostPath:
+            path: /papermerge-data
+            type: DirectoryOrCreate
