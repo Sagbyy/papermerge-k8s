@@ -27,3 +27,23 @@ spec:
   - port: 6379
     targetPort: 6379
   type: ClusterIP
+
+---
+
+# Minio
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: papermerge-minio
+spec:
+  selector:
+    app: papermerge-minio
+  ports:
+    - port: 9000
+      name: api
+      targetPort: 9000
+    - port: 9001
+      name: console
+      targetPort: 9001
+  type: LoadBalancer
