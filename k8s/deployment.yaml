@@ -113,3 +113,72 @@ spec:
           hostPath:
             path: /data/minio-data
             type: DirectoryOrCreate
+
+---
+
+# Worker S3
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge-worker-s3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: papermerge-worker-s3
+  template:
+    metadata:
+      labels:
+        app: papermerge-worker-s3
+    spec:
+      containers:
+      - name: papermerge-worker-s3
+        image: papermerge/s3worker:0.4.3
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        envFrom:
+          - configMapRef:
+              name: papermerge-worker-config
+          - configMapRef:
+              name: papermerge-worker-s3-config
+        volumeMounts:
+          - name: worker-s3-data
+            mountPath: /datvar/media/pmg
+      volumes:
+        - name: worker-s3-data
+          hostPath:
+            path: /data/worker-s3-data
+            type: DirectoryOrCreate
+
+---
+
+# Worker OCR
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge-worker-ocr
+spec:
+  selector:
+    matchLabels:
+      app: papermerge-worker-ocr
+  template:
+    metadata:
+      labels:
+        app: papermerge-worker-ocr
+    spec:
+      containers:
+      - name: papermerge-worker-ocr
+        image: papermerge/ocrworker:0.3.1
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        envFrom:
+          - configMapRef:
+              name: papermerge-worker-config
+          - configMapRef:
+              name: papermerge-worker-ocr-config
