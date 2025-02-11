@@ -34,7 +34,7 @@ spec:
       volumes:
         - name: postgres-data
           hostPath:
-            path: /data/postgres-data
+            path: /postgres-data
             type: DirectoryOrCreate
 
 ---
@@ -63,13 +63,85 @@ spec:
               cpu: "500m"
           ports:
             - containerPort: 6379
+
+---
+
+# Minio
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: papermerge-minio
+  template:
+    metadata:
+      labels:
+        app: papermerge-minio
+    spec:
+      containers:
+        - name: papermerge-minio
+          image: minio/minio:latest
+          args: [ "server", "--console-address", ":9001", "/data" ]
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
           volumeMounts:
-            - name: redis-data
+            - name: minio-data
               mountPath: /data
+          envFrom:
+            - secretRef:
+                name: papermerge-minio-secret
       volumes:
-        - name: redis-data
+        - name: minio-data
           hostPath:
-            path: /data/redis-data
+            path: /minio-data
+            type: DirectoryOrCreate
+
+---
+
+# Worker S3
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge-worker-s3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: papermerge-worker-s3
+  template:
+    metadata:
+      labels:
+        app: papermerge-worker-s3
+    spec:
+      containers:
+      - name: papermerge-worker-s3
+        image: papermerge/s3worker:0.4.3
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        envFrom:
+          - configMapRef:
+              name: papermerge-worker-config
+          - configMapRef:
+              name: papermerge-worker-s3-config
+        volumeMounts:
+          - name: worker-s3-data
+            mountPath: /datvar/media/pmg
+      volumes:
+        - name: worker-s3-data
+          hostPath:
+            path: /data/worker-s3-data
             type: DirectoryOrCreate
 ---
 
@@ -110,4 +182,74 @@ spec:
         - name: minio-storage
           hostPath:
             path: /data/minio
+            type: DirectoryOrCreate
+
+---
+
+# Worker OCR
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge-worker-ocr
+spec:
+  selector:
+    matchLabels:
+      app: papermerge-worker-ocr
+  template:
+    metadata:
+      labels:
+        app: papermerge-worker-ocr
+    spec:
+      containers:
+      - name: papermerge-worker-ocr
+        image: papermerge/ocrworker:0.3.1
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        envFrom:
+          - configMapRef:
+              name: papermerge-worker-config
+          - configMapRef:
+              name: papermerge-worker-ocr-config
+
+---
+
+# Papermerge
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papermerge
+spec:
+  selector:
+    matchLabels:
+      app: papermerge
+  template:
+    metadata:
+      labels:
+        app: papermerge
+    spec:
+      containers:
+      - name: papermerge
+        image: papermerge/papermerge:3.3.1
+        envFrom:
+          - configMapRef:
+              name: papermerge-config
+          - secretRef:
+              name: papermerge-secret
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: papermerge-data
+            mountPath: /var/media/pmg
+      volumes:
+        - name: papermerge-data
+          hostPath:
+            path: /papermerge-data
             type: DirectoryOrCreate
