@@ -139,7 +139,7 @@ spec:
       volumes:
         - name: worker-s3-data
           hostPath:
-            path: /data/worker-s3-data
+            path: /var/media/pmg
             type: DirectoryOrCreate
 
 ---
@@ -150,6 +150,7 @@ kind: Deployment
 metadata:
   name: papermerge-worker-ocr
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: papermerge-worker-ocr
@@ -163,7 +164,7 @@ spec:
           image: papermerge/ocrworker:0.3.1
           resources:
             limits:
-              memory: "512Mi"
+              memory: "1024Mi"
               cpu: "500m"
           envFrom:
             - configMapRef:
@@ -207,5 +208,5 @@ spec:
       volumes:
         - name: papermerge-data
           hostPath:
-            path: /papermerge-data
+            path: /var/media/pmg
             type: DirectoryOrCreate
