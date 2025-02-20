@@ -34,7 +34,7 @@ spec:
       volumes:
         - name: postgres-data
           hostPath:
-            path: /postgres-data
+            path: /data/postgres
             type: DirectoryOrCreate
 
 ---
@@ -101,7 +101,7 @@ spec:
       volumes:
         - name: minio-data
           hostPath:
-            path: /minio-data
+            path: /data/minio
             type: DirectoryOrCreate
 
 ---
@@ -133,13 +133,15 @@ spec:
                 name: papermerge-worker-config
             - configMapRef:
                 name: papermerge-worker-s3-config
+            - secretRef:
+                name: papermerge-worker-secret
           volumeMounts:
             - name: worker-s3-data
               mountPath: /var/media/pmg
       volumes:
         - name: worker-s3-data
           hostPath:
-            path: /var/media/pmg
+            path: /data/s3
             type: DirectoryOrCreate
 
 ---
@@ -171,6 +173,8 @@ spec:
                 name: papermerge-worker-config
             - configMapRef:
                 name: papermerge-worker-ocr-config
+            - secretRef:
+                name: papermerge-worker-secret
 
 ---
 # Papermerge
@@ -208,5 +212,5 @@ spec:
       volumes:
         - name: papermerge-data
           hostPath:
-            path: /var/media/pmg
+            path: /data/papermerge
             type: DirectoryOrCreate

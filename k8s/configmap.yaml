@@ -15,14 +15,11 @@ kind: ConfigMap
 metadata:
   name: papermerge-worker-config
 data:
-  AWS_ACCESS_KEY_ID: 2e8817266261610810596a50b8f4a8c5
   AWS_REGION_NAME: us-east-1
   AWS_S3_ENDPOINT: http://papermerge-minio:9000
   AWS_SECRET_ACCESS_KEY: a503071debfa3ac0c1de1cd79f
-  PAPERMERGE__DATABASE__URL: postgresql://papermerge:pmg-secret@papermerge-database:5432/papermerge
   PAPERMERGE__REDIS__URL: redis://papermerge-redis:6379/0
   PAPERMERGE__S3__BUCKET_NAME: papermerge
-  PAPERMERGE__SECURITY__SECRET_KEY: 8aa9127e904324e1d93c2b684883a327c3b5be964dd161e3e4df8dbca0443ec21
 
 ---
 # Worker S3
@@ -51,7 +48,6 @@ kind: ConfigMap
 metadata:
   name: papermerge-config
 data:
-  PAPERMERGE__DATABASE__URL: postgresql://papermerge:pmg-secret@papermerge-database:5432/papermerge
   PAPERMERGE__MAIN__MEDIA_ROOT: /var/media/pmg
   PAPERMERGE__OCR__LANG_CODES: "eng,fra"
   PAPERMERGE__OCR__DEFAULT_LANG_CODE: "eng"
@@ -60,4 +56,3 @@ data:
   PAPERMERGE__S3__BUCKET_NAME: papermerge
   PAPERMERGE__S3__ENDPOINT_URL: http://papermerge-minio:9000
   PAPERMERGE__S3__AWS_ACCESS_KEY_ID: 2e8817266261610810596a50b8f4a8c5
-  PAPERMERGE__S3__AWS_SECRET_ACCESS_KEY: a503071debfa3ac0c1de1cd79f
